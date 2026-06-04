@@ -11,7 +11,7 @@ from mjlab.tasks.registry import load_env_cfg
 
 
 def make_env(num_envs: int = 1, device: str = "cpu", play: bool = False) -> ManagerBasedRlEnv:
-    """Build the mjlab Mjlab-Cartpole-Balance env. See docs/INTERFACES.md."""
-    cfg = load_env_cfg("Mjlab-Cartpole-Balance", play=play)
-    cfg.scene.num_envs = num_envs
-    return ManagerBasedRlEnv(cfg=cfg, device=device)
+  """Build the mjlab Mjlab-Cartpole-Balance env. See docs/INTERFACES.md."""
+  cfg = load_env_cfg("Mjlab-Cartpole-Balance", play=play)
+  cfg.scene.num_envs = num_envs
+  return ManagerBasedRlEnv(cfg=cfg, device=device)

@@ -63,7 +63,7 @@ def make_env(num_envs=1, device="cpu", play=False):
 
 ### Task 2 — Add `scripts/view.py` + fix indent style (2026-06-04, Round 2)
 
-**STATUS:** TODO
+**STATUS:** DONE — https://github.com/edgarmoreaualix/orchestratedcartpole/pull/6
 
 **Branch:** `feat/env-agent-r2` (already checked out in your worktree).
 
