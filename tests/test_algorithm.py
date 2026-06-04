@@ -20,3 +20,19 @@ def test_get_ppo_config_hyperparameters_sensible():
   assert 0 < cfg.algorithm.clip_param < 1
   assert cfg.algorithm.learning_rate > 0
   assert 0 < cfg.algorithm.lam <= 1
+
+
+def test_get_ppo_config_obs_normalization_enabled():
+  cfg = get_ppo_config()
+  assert cfg.actor.obs_normalization is True
+  assert cfg.critic.obs_normalization is True
+
+
+def test_get_ppo_config_init_std_is_05():
+  cfg = get_ppo_config()
+  assert cfg.actor.distribution_cfg["init_std"] == 0.5
+
+
+def test_get_ppo_config_entropy_coef_is_005():
+  cfg = get_ppo_config()
+  assert cfg.algorithm.entropy_coef == 0.005

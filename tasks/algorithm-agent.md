@@ -55,7 +55,7 @@ Same shape as `tasks/env-agent.md`: `git fetch origin && git rebase origin/main`
 
 ### Task 2 — Tune hyperparameters for actual convergence (2026-06-04, Round 3)
 
-**STATUS:** TODO
+**STATUS:** DONE — https://github.com/edgarmoreaualix/orchestratedcartpole/pull/8
 
 **Branch:** `feat/algorithm-agent-r3`.
 
