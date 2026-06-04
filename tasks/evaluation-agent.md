@@ -22,7 +22,7 @@ Same shape as `tasks/env-agent.md`, on branch `feat/evaluation-agent`.
 
 ### Task 1 — Implement evaluation entrypoint (2026-06-04)
 
-**STATUS:** TODO
+**STATUS:** DONE — PR https://github.com/edgarmoreaualix/orchestratedcartpole/pull/2
 
 **Scope:** Implement `src/cartpole/eval.py:main(checkpoint, num_envs, num_episodes, device, video) -> dict` per `docs/INTERFACES.md`. Returns `{"mean_return": float, "std_return": float, "mean_episode_length": float}`.
 
