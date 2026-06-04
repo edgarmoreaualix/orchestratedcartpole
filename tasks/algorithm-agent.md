@@ -20,7 +20,7 @@ Same shape as `tasks/env-agent.md`: `git fetch origin && git rebase origin/main`
 
 ### Task 1 — Implement PPO config for cartpole (2026-06-04)
 
-**STATUS:** TODO
+**STATUS:** DONE — PR https://github.com/edgarmoreaualix/orchestratedcartpole/pull/3
 
 **Scope:** Implement `src/cartpole/algorithm.py:get_ppo_config(experiment_name)` per `docs/INTERFACES.md`. Return an `mjlab.rl.RslRlOnPolicyRunnerCfg` tuned for cartpole.
 
