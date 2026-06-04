@@ -25,7 +25,10 @@ def main(
   from cartpole.env import make_env
 
   device = device or ("cuda:0" if torch.cuda.is_available() else "cpu")
-  env = make_env(num_envs=num_envs, device=device, play=True)
+  # play=False keeps episode_length_s=50s and time_out terminations active.
+  # play=True sets episode_length_s=1e10, so time_out never fires and the
+  # eval loop hangs forever — that was the Round 2 root cause.
+  env = make_env(num_envs=num_envs, device=device, play=False)
   agent_cfg = get_ppo_config(experiment_name="cartpole-eval")
 
   # video recording — wrap before the vecenv wrapper so frames are captured
@@ -44,12 +47,18 @@ def main(
   ep_return = torch.zeros(num_envs, device=device)
   ep_len = torch.zeros(num_envs, dtype=torch.long, device=device)
   done_count = 0
-  while done_count < num_episodes:
+  # Hard cap: 1500 steps per episode (mjlab cartpole horizon is 1000).
+  # Protects against env configurations where dones never fires.
+  MAX_TOTAL_STEPS = num_episodes * 1500
+  step = 0
+  while done_count < num_episodes and step < MAX_TOTAL_STEPS:
     action = policy(obs)
-    obs, reward, terminated, truncated, _ = env.step(action)
+    # RslRlVecEnvWrapper.step returns (obs, rew, dones, extras) — 4-tuple.
+    obs, reward, dones, _ = env.step(action)
     ep_return += reward
     ep_len += 1
-    done = terminated | truncated
+    step += 1
+    done = dones.bool()
     for i in done.nonzero(as_tuple=False).flatten().tolist():
       returns.append(ep_return[i].item())
       lengths.append(ep_len[i].item())
@@ -57,11 +66,20 @@ def main(
       ep_len[i] = 0
       done_count += 1
 
-  return {
+  # If the hard cap fired before all episodes completed, record in-flight episodes.
+  if done_count < num_episodes:
+    for i in range(num_envs):
+      if ep_len[i] > 0:
+        returns.append(ep_return[i].item())
+        lengths.append(ep_len[i].item())
+
+  metrics = {
     "mean_return": statistics.fmean(returns),
     "std_return": statistics.stdev(returns) if len(returns) > 1 else 0.0,
     "mean_episode_length": statistics.fmean(lengths),
   }
+  print(metrics)
+  return metrics
 
 
 if __name__ == "__main__":
