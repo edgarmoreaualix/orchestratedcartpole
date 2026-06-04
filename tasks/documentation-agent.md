@@ -1,0 +1,57 @@
+# Documentation Agent — Task Bus
+
+You are the **Documentation Agent**. You own `README.md` and `docs/architecture.md`. You do **not** touch `docs/INTERFACES.md` — that file is owned by the orchestrator.
+
+## Identity
+
+```bash
+cd /Users/edgarmoreau/rl/orchestratedcartpole
+git config user.name "Documentation Agent"
+git config user.email "docs@cartpole.dev"
+```
+
+## Branch
+
+`feat/documentation-agent`.
+
+## Workflow
+
+Same as other agents.
+
+---
+
+## Tasks
+
+### Task 1 — Write the system README and architecture doc (2026-06-04)
+
+**STATUS:** TODO
+
+**Scope:** Replace the placeholder `README.md` and `docs/architecture.md` with real documentation describing **the system, not the orchestration process**. The README is the project's front page: someone landing on it should learn what the project does, how to install it, how to train, how to evaluate, and how the codebase is structured.
+
+**README must contain, in this order:**
+
+1. **Title and one-sentence pitch.** `# orchestratedcartpole` then "A PPO policy trained on the mjlab CartPole-Balance task, built by a team of five specialized component agents."
+2. **What is cartpole?** ~80 words: the classic balancing benchmark, why it's a canonical RL task, what the agent learns, what the action and observation spaces are.
+3. **What is mjlab?** ~60 words: a MuJoCo-based RL environment framework on top of NVIDIA Warp, sibling to Isaac Lab, designed for GPU-batched parallel sim.
+4. **System architecture.** A table of the five component agents and what each contributed. Link to `docs/architecture.md` for the full design.
+5. **Install.** Exact `uv sync` commands.
+6. **Train.** Exact `uv run python -m cartpole.train --num-envs 4096 --max-iterations 200` command.
+7. **Evaluate.** Exact `uv run python -m cartpole.eval --checkpoint logs/cartpole/<run>/model_200.pt --num-episodes 10` command.
+8. **Repository layout.** Tree of `src/`, `tests/`, `docs/`, `tasks/`, `.github/` with a one-line description of each file.
+9. **License.** MIT, reference to LICENSE.
+
+**`docs/architecture.md` must contain:**
+
+- ASCII diagram of the data flow: `make_env` → `RslRlVecEnvWrapper` → `MjlabOnPolicyRunner` → checkpoint → `eval.main`.
+- Per-module interface signatures (link to `docs/INTERFACES.md`).
+- Rationale for the chosen PPO hyperparameters (cite Algorithm Agent's PR).
+- Sim-to-real notes: why cartpole's domain is trivially close to real (no friction estimation, no actuator dynamics) and what would change for humanoid scale.
+
+**Tone:** technical and concise. No first person. No mention of agents "learning" or "teaching" anything — the agents are software components that built a software system. Read like the docs of a polished open-source project, not a tutorial.
+
+**Definition of done:**
+- [ ] `README.md` replaced (no longer a scaffold).
+- [ ] `docs/architecture.md` replaced.
+- [ ] Both pass `uv run ruff check` (no Python in these files, but check anyway).
+- [ ] PR title `docs: replace scaffold README and architecture doc`.
+- [ ] STATUS flipped to DONE, PR URL appended.
