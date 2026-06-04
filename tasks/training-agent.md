@@ -4,11 +4,18 @@ You are the **Training Agent**. You own `src/cartpole/train.py` and `tests/test_
 
 ## Working directory and identity
 
+Set the per-commit identity helper once per shell — do NOT use `git config user.name` (see [`POSTMORTEM.md`](../POSTMORTEM.md)):
+
 ```bash
 cd /Users/edgarmoreau/rl/orchestratedcartpole-training-agent
-git config user.name "Training Agent"
-git config user.email "training@cartpole.dev"
+AGENT_NAME="Training Agent"
+AGENT_EMAIL="training@cartpole.dev"
+agent_commit() {
+  git -c user.name="$AGENT_NAME" -c user.email="$AGENT_EMAIL" commit "$@"
+}
 ```
+
+Use `agent_commit -m "..."` for every commit you make.
 
 ## Workflow
 
@@ -56,3 +63,40 @@ Add a `tyro.cli` entry under `if __name__ == "__main__":` (already in the stub).
 - [ ] Smoke test passes locally: `uv run pytest tests/test_train.py -v -m slow`.
 - [ ] PR title `train: implement PPO training loop on rsl_rl`. Body has summary + smoke-test output.
 - [ ] STATUS flipped to DONE, PR URL appended.
+
+### Task 2 — Train a real cartpole policy + ship release (2026-06-04, Round 2)
+
+**STATUS:** TODO
+
+**Branch:** `feat/training-agent-r2` (already checked out in your worktree).
+
+**Scope (three commits):**
+
+**Commit 1 — remove the `xfail` marker** on `test_main_runs_one_iteration_cpu` in `tests/test_train.py`. Env and Algorithm are now merged into `main`, so the smoke test should pass cleanly. Run `uv run pytest tests/test_train.py -v -m slow` to confirm (this will execute the 1-iteration smoke training).
+
+**Commit 2 — run a real training to convergence on CPU and capture metrics.** Choose `num_envs` and `max_iterations` that fit a ~5-minute wall-clock budget on this Mac (no GPU). Sensible starting point: `num_envs=128`, `max_iterations=100`. If your run finishes faster than 5 min and isn't converged (mean episodic return not saturating), bump `max_iterations` and re-run. If it's too slow, reduce `num_envs`.
+
+```bash
+uv run python -m cartpole.train --num-envs=128 --max-iterations=100 --device=cpu --seed=1
+```
+
+Capture stdout to a file: `uv run python -m cartpole.train ... 2>&1 | tee training.log`. Note the final mean episode reward.
+
+**Commit 3 — ship the checkpoint as a GitHub release.** Find the last checkpoint under `logs/cartpole/<timestamp>/model_<N>.pt`. Create release `v0.2.0`:
+
+```bash
+gh release create v0.2.0 logs/cartpole/<timestamp>/model_<N>.pt \
+  --title "Round 2 cartpole checkpoint" \
+  --notes "Trained on CPU, num_envs=<...>, max_iterations=<...>. Final mean episode reward: <...>. See PR for full training log."
+```
+
+Do NOT commit the checkpoint to git (`.gitignore` already excludes `*.pt`). The release is the canonical artifact.
+
+**Definition of done:**
+- [ ] `tests/test_train.py` no longer has `xfail`; smoke test passes.
+- [ ] A training run completed; `logs/cartpole/<run>/model_<N>.pt` exists.
+- [ ] GitHub release `v0.2.0` exists with the checkpoint attached. Verify: `gh release view v0.2.0`.
+- [ ] PR title: `train: real training run + release v0.2.0 checkpoint`. Body: hyperparameters used, final mean episode reward, link to release.
+- [ ] STATUS above flipped to DONE, PR URL appended.
+
+**If you encounter a true blocker** (e.g. training diverges, OOM, gh auth missing), push partial work and post a single `BLOCKED:` comment on the PR with the exact issue.

@@ -4,11 +4,18 @@ You are the **Evaluation Agent**. You own `src/cartpole/eval.py` and `tests/test
 
 ## Working directory and identity
 
+Set the per-commit identity helper once per shell — do NOT use `git config user.name` (see [`POSTMORTEM.md`](../POSTMORTEM.md)):
+
 ```bash
 cd /Users/edgarmoreau/rl/orchestratedcartpole-evaluation-agent
-git config user.name "Evaluation Agent"
-git config user.email "eval@cartpole.dev"
+AGENT_NAME="Evaluation Agent"
+AGENT_EMAIL="eval@cartpole.dev"
+agent_commit() {
+  git -c user.name="$AGENT_NAME" -c user.email="$AGENT_EMAIL" commit "$@"
+}
 ```
+
+Use `agent_commit -m "..."` for every commit you make.
 
 ## Workflow
 
@@ -79,3 +86,57 @@ If `video=True`, additionally wrap the env with `mjlab.utils.wrappers.VideoRecor
 - [ ] `test_main_signature` passes: `uv run pytest tests/test_eval.py -v`.
 - [ ] PR title `eval: implement policy eval + metrics`. Body has summary + test output.
 - [ ] STATUS flipped to DONE, PR URL appended.
+
+### Task 2 — Run eval against the v0.2.0 checkpoint and ship a GIF (2026-06-04, Round 2)
+
+**STATUS:** TODO
+
+**Branch:** `feat/evaluation-agent-r2` (already checked out in your worktree).
+
+**Dependency:** This task requires the GitHub release `v0.2.0` to exist (created by the Training Agent in `feat/training-agent-r2`). If `gh release view v0.2.0` errors with "not found", STOP and post a PR comment `BLOCKED: waiting for v0.2.0 release`.
+
+**Scope (three commits):**
+
+**Commit 1 — remove the `requires_checkpoint` skip marker** on `test_main_returns_metric_dict` in `tests/test_eval.py`. We now have a checkpoint, so the integration test should run. Add a fixture that downloads the v0.2.0 checkpoint to a tmp path at test time.
+
+**Commit 2 — run eval with video recording, convert to GIF.**
+
+```bash
+# Download checkpoint
+mkdir -p artifacts
+gh release download v0.2.0 --pattern "model_*.pt" --dir artifacts/
+
+# Run eval with video
+uv run python -m cartpole.eval --checkpoint artifacts/model_<N>.pt --num-envs=1 --num-episodes=3 --video=True
+
+# Find the mp4
+ls videos/eval/*.mp4
+```
+
+Capture the metrics dict returned by `eval.main` (you may need to add a small print statement at the bottom of `eval.py` for stdout visibility, or call eval programmatically from a tiny `scripts/run_eval.py` you add).
+
+Convert the resulting mp4 to a high-quality GIF using ffmpeg (install with `brew install ffmpeg` if missing). Use the two-pass palettegen technique:
+
+```bash
+ffmpeg -y -i videos/eval/<input>.mp4 \
+  -vf "fps=15,scale=480:-1:flags=lanczos,palettegen=stats_mode=full" \
+  /tmp/palette.png
+ffmpeg -y -i videos/eval/<input>.mp4 -i /tmp/palette.png \
+  -filter_complex "fps=15,scale=480:-1:flags=lanczos[v];[v][1:v]paletteuse=dither=bayer" \
+  assets/cartpole-trained.gif
+```
+
+Target: GIF under 2 MB, framerate ~15 fps, width 480 px.
+
+**Commit 3 — commit the GIF + the metrics-output script** at:
+- `assets/cartpole-trained.gif`
+- `scripts/run_eval.py` (a tiny entrypoint that loads the checkpoint, runs eval, prints metrics dict; useful for the README's "reproduce these numbers" instructions).
+
+Add `videos/` to `.gitignore` (it should already be there but verify). Do NOT commit the raw mp4 or the checkpoint.
+
+**Definition of done:**
+- [ ] `tests/test_eval.py` no longer has `requires_checkpoint` skip on `test_main_returns_metric_dict`; it downloads + tests against v0.2.0 checkpoint.
+- [ ] `assets/cartpole-trained.gif` exists and is < 2 MB.
+- [ ] `scripts/run_eval.py` exists; running it prints the eval metrics dict.
+- [ ] PR title: `eval: run against v0.2.0 + ship GIF`. Body: the metrics dict (mean_return, std_return, mean_episode_length) and a note about ffmpeg setup if it had to be installed.
+- [ ] STATUS above flipped to DONE, PR URL appended.

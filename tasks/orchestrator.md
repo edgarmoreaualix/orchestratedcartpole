@@ -14,12 +14,39 @@ The `tasks/` directory is the command bus for the orchestrated build. Five speci
 
 Each worktree shares the same underlying `.git` database but holds its own checkout of its branch, so the five agents can edit files in parallel without contending for the working tree.
 
+## Round 2 branches
+
+Each round uses its own feature branch suffix so the git log shows round-by-round progression. Round 2 branches (Algorithm Agent sits out this round):
+
+| Agent                | Round 2 branch                  |
+|----------------------|----------------------------------|
+| Environment Agent    | `feat/env-agent-r2`              |
+| Training Agent       | `feat/training-agent-r2`         |
+| Evaluation Agent     | `feat/evaluation-agent-r2`       |
+| Documentation Agent  | `feat/documentation-agent-r2`    |
+
+Round 2 also adds explicit runtime dependencies between agents (Eval needs Training's release, Docs needs Eval's GIF). When a dep is missing, the dependent agent posts `BLOCKED: waiting for <what>` on its PR and stops; the operator re-fires it once the dependency lands.
+
 ## Cross-agent rules
 
 - An agent only edits its own files (the path it owns and its own task file).
 - An agent never touches `docs/INTERFACES.md`. If a signature change is needed, the agent opens a PR titled `interface: <reason>` that touches only `docs/INTERFACES.md`, and the orchestrator coordinates.
 - Every agent commits under its own author identity (configured locally per shell, see each agent file).
 - Every agent's PR title uses a conventional-commits prefix: `env:`, `algo:`, `train:`, `eval:`, `docs:`.
+
+## Identity norm (Round 2+) — per-commit, not per-config
+
+Round 1 demonstrated that `git config user.name` writes to the shared `.git/config` across worktrees and silently corrupts attribution. From Round 2 onward, every agent uses the per-commit override pattern. Set the identity once at shell start as bash variables, then use the helper for every commit:
+
+```bash
+AGENT_NAME="<Agent Name>"
+AGENT_EMAIL="<slug>@cartpole.dev"
+agent_commit() {
+  git -c user.name="$AGENT_NAME" -c user.email="$AGENT_EMAIL" commit "$@"
+}
+```
+
+Use `agent_commit -m "..."` instead of `git commit -m "..."`. The `-c key=value` form sets configuration only for the duration of that single git invocation. It does not touch any persistent config file and therefore cannot bleed across worktrees. See [`POSTMORTEM.md`](../POSTMORTEM.md) for the full root cause.
 
 ## Autonomy norm (applies to every agent on every task)
 
