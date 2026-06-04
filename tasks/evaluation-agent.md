@@ -140,3 +140,75 @@ Add `videos/` to `.gitignore` (it should already be there but verify). Do NOT co
 - [ ] `scripts/run_eval.py` exists; running it prints the eval metrics dict.
 - [ ] PR title: `eval: run against v0.2.0 + ship GIF`. Body: the metrics dict (mean_return, std_return, mean_episode_length) and a note about ffmpeg setup if it had to be installed.
 - [ ] STATUS above flipped to DONE, PR URL appended.
+
+### Task 3 — Fix the eval hang + ship GIF against v0.3.0 (2026-06-04, Round 3)
+
+**STATUS:** TODO
+
+**Branch:** `feat/evaluation-agent-r3`.
+
+**Dependency:** This task requires release `v0.3.0` (Training Agent Round 3). If `gh release view v0.3.0` errors, STOP and post `BLOCKED: waiting for v0.3.0 release`.
+
+**Context — what went wrong in Round 2:** The Round 2 eval against v0.2.0 hung indefinitely. Two parallel runs were stuck at 99% CPU for >20 minutes with the video output directory completely empty. Root cause: the eval `while done_count < num_episodes` loop only exits on `dones` being True, but under the combination of (a) `play=True` env config and (b) the `VideoRecorder` wrapper, the `dones` signal never fires. The VideoRecorder also makes each step ~1000× slower than no-video, so any infinite loop also pegs CPU.
+
+**Scope (two commits):**
+
+**Commit 1 — fix the eval loop.** In `src/cartpole/eval.py`, add a hard maximum-steps escape so the loop can never run forever, regardless of env configuration:
+
+```python
+# Hard cap: 1500 steps per episode (mjlab cartpole horizon is 1000)
+# Protects against env configurations where dones never fires.
+MAX_TOTAL_STEPS = num_episodes * 1500
+step = 0
+while done_count < num_episodes and step < MAX_TOTAL_STEPS:
+    action = policy(obs)
+    obs, reward, dones, _ = env.step(action)
+    ep_return += reward
+    ep_len += 1
+    step += 1
+    done = dones.bool()
+    for i in done.nonzero(as_tuple=False).flatten().tolist():
+        ...
+        done_count += 1
+
+# If the hard cap was hit before num_episodes were observed,
+# record whatever is in-flight as a truncated episode.
+if done_count < num_episodes:
+    for i in range(num_envs):
+        if ep_len[i] > 0:
+            returns.append(ep_return[i].item())
+            lengths.append(ep_len[i].item())
+```
+
+Additionally, investigate WHY `dones` never fired in Round 2. Possible causes worth one comment each:
+- `play=True` in `make_env` strips terminations (likely root cause).
+- The VideoRecorder wrapper consumes the dones signal.
+- mjlab cartpole has a time-limit termination only by total sim-time, not step count.
+
+Pick the simplest fix that makes the eval finish in reasonable time: either pass `play=False` to `make_env` (which keeps terminations active) or explicitly re-enable terminations on the env after construction. Document your fix choice in the PR body.
+
+Update `tests/test_eval.py`:
+- Update the integration test to download v0.3.0 instead of v0.2.0.
+- The integration test should now complete in under 2 minutes wall-clock.
+
+**Commit 2 — record the GIF against v0.3.0.**
+
+```bash
+mkdir -p artifacts
+gh release download v0.3.0 --pattern "model_*.pt" --dir artifacts/
+uv run python -m cartpole.eval --checkpoint artifacts/model_<N>.pt --num-envs=1 --num-episodes=3 --video=True 2>&1 | tee eval-r3.log
+# verify videos/eval/*.mp4 exists
+ls -la videos/eval/
+# convert to gif using the existing two-pass palettegen recipe (see Task 2 above)
+ffmpeg -y -i videos/eval/<input>.mp4 ...palette commands... assets/cartpole-trained.gif
+```
+
+**Replace** the existing `assets/cartpole-trained.gif` (do not commit a second file). Verify the GIF is under 2 MB and the policy is actually balancing (cart making small corrective moves, pole staying near vertical).
+
+**Definition of done:**
+- [ ] `src/cartpole/eval.py` has a max-steps escape and can no longer hang.
+- [ ] `eval-r3.log` committed with the final metrics line visible.
+- [ ] `assets/cartpole-trained.gif` updated; visually shows balancing.
+- [ ] Integration test updated to v0.3.0; passes in < 2 min.
+- [ ] PR title: `eval: fix hang + record GIF against v0.3.0`. Body: root-cause analysis of the hang, the fix chosen, the new metrics dict (mean_return, std_return, mean_episode_length).
+- [ ] STATUS above flipped to DONE, PR URL appended.

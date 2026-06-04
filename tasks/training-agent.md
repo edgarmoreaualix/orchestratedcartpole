@@ -100,3 +100,38 @@ Do NOT commit the checkpoint to git (`.gitignore` already excludes `*.pt`). The 
 - [ ] STATUS above flipped to DONE, PR URL appended.
 
 **If you encounter a true blocker** (e.g. training diverges, OOM, gh auth missing), push partial work and post a single `BLOCKED:` comment on the PR with the exact issue.
+
+### Task 3 — Retrain with tuned config, release v0.3.0 (2026-06-04, Round 3)
+
+**STATUS:** TODO
+
+**Branch:** `feat/training-agent-r3`.
+
+**Dependency:** Algorithm Agent's Round 3 PR must be merged into `main` first (the tuned PPO config is needed). If `git log origin/main --oneline | grep "algo: tune"` returns nothing, STOP and post `BLOCKED: waiting for algo: tune hyperparameters to merge`.
+
+**Scope (one commit + one release):**
+
+After rebasing on the latest `main`, run a longer training to convergence and ship a new release.
+
+```bash
+uv run python -m cartpole.train --num-envs=128 --max-iterations=500 --device=cpu --seed=1 2>&1 | tee training-r3.log
+```
+
+Watch the stdout `Mean reward` line. With the tuned config, mean episode reward should climb from ~10 in the first iterations toward the ceiling (close to the episode horizon — the per-step reward is bounded in `[0, 1]` so a fully-balanced policy approaches `mean_return ≈ episode_length`). Convergence target: **mean episode reward ≥ 700** (representing a policy that keeps the pole near-vertical the majority of each episode). If it has not reached that by iteration 500, post a `BLOCKED:` comment and stop.
+
+Once trained, find `logs/cartpole/<timestamp>/model_<N>.pt` and ship as release **v0.3.0**:
+
+```bash
+gh release create v0.3.0 logs/cartpole/<timestamp>/model_<N>.pt \
+  --title "Round 3 cartpole checkpoint — tuned config, 500 iters" \
+  --notes "Trained with obs_normalization=True, init_std=0.5, entropy_coef=0.005, max_iterations=500, num_envs=128, CPU. Final mean episode reward: <FROM_LOG>. Supersedes v0.2.0 (which was undertrained at 100 iters and did not balance)."
+```
+
+Commit `training-r3.log`. Do NOT commit the checkpoint.
+
+**Definition of done:**
+- [ ] Training run completed; mean episode reward at last iteration ≥ 700.
+- [ ] GitHub release `v0.3.0` exists with the checkpoint attached.
+- [ ] `training-r3.log` committed.
+- [ ] PR title: `train: retrain with tuned config, release v0.3.0`. Body: final mean reward, full hyperparameters table, link to release.
+- [ ] STATUS above flipped to DONE, PR URL appended.

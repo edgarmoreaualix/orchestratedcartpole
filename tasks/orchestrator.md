@@ -27,6 +27,19 @@ Each round uses its own feature branch suffix so the git log shows round-by-roun
 
 Round 2 also adds explicit runtime dependencies between agents (Eval needs Training's release, Docs needs Eval's GIF). When a dep is missing, the dependent agent posts `BLOCKED: waiting for <what>` on its PR and stops; the operator re-fires it once the dependency lands.
 
+## Round 3 branches
+
+Round 2's training was undertrained (mean reward 12/1000 — pole didn't balance) and the eval hung due to a no-termination + VideoRecorder interaction. Round 3 corrects both:
+
+| Agent                | Round 3 branch                  |
+|----------------------|----------------------------------|
+| Algorithm Agent      | `feat/algorithm-agent-r3`        |
+| Training Agent       | `feat/training-agent-r3`         |
+| Evaluation Agent     | `feat/evaluation-agent-r3`       |
+| Documentation Agent  | `feat/documentation-agent-r3`    |
+
+Env Agent sits out Round 3 (no env changes needed). Dependencies are linear: Algo → Train → Eval → Docs.
+
 ## Cross-agent rules
 
 - An agent only edits its own files (the path it owns and its own task file).

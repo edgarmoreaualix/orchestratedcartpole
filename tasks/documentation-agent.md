@@ -114,3 +114,38 @@ The repository was built by five specialized agents (Environment, Algorithm, Tra
 - [ ] `docs/architecture.md` has a Trained policy notes section.
 - [ ] PR title: `docs: add Results section with GIF + v0.2.0 metrics`.
 - [ ] STATUS above flipped to DONE, PR URL appended.
+
+### Task 3 — Update Results with v0.3.0 + add iteration notes (2026-06-04, Round 3)
+
+**STATUS:** TODO
+
+**Branch:** `feat/documentation-agent-r3`.
+
+**Dependency:** Evaluation Agent Round 3 PR must be merged (new `assets/cartpole-trained.gif` on `main`, release v0.3.0 live). If either is missing, STOP and post `BLOCKED:`.
+
+**Scope (one commit):**
+
+Update `README.md`:
+
+1. **Replace the Results section's metrics table** with v0.3.0 numbers pulled from the Evaluation Agent's PR body (`feat/evaluation-agent-r3`).
+2. **Replace the release link** from v0.2.0 to v0.3.0. Keep the reproduce-command pointing at v0.3.0.
+3. **Insert a new `### Engineering iteration notes` subsection inside Results** with the following text (substitute the real numbers):
+
+```markdown
+### Engineering iteration notes
+
+The first training run (release [`v0.2.0`](https://github.com/edgarmoreaualix/orchestratedcartpole/releases/tag/v0.2.0)) used the default PPO config and achieved a mean episode reward of approximately 12 / 1000 — the policy moved the cart but did not balance the pole. The eval pipeline simultaneously hung due to an infinite-loop bug when terminations were inactive under the `VideoRecorder` wrapper.
+
+The second iteration ([`v0.3.0`](https://github.com/edgarmoreaualix/orchestratedcartpole/releases/tag/v0.3.0)) addressed both: the Algorithm Agent enabled observation normalization, lowered the initial action standard deviation, and reduced the entropy coefficient; the Training Agent re-ran with five times the iteration count; the Evaluation Agent added a hard step cap to the eval loop and re-enabled terminations during eval. The GIF above is the v0.3.0 policy.
+
+See [`POSTMORTEM.md`](POSTMORTEM.md) for the Round 1 author-identity bug. See PR history for the Round 2 → Round 3 iteration trail.
+```
+
+4. In `docs/architecture.md`, append a one-paragraph "## Convergence and hyperparameter sensitivity" section noting that cartpole is sensitive to obs normalization and initial action standard deviation, citing the v0.2.0 → v0.3.0 jump.
+
+**Definition of done:**
+- [ ] `README.md` Results section reflects v0.3.0.
+- [ ] `Engineering iteration notes` subsection added with the v0.2.0 → v0.3.0 narrative.
+- [ ] `docs/architecture.md` has the convergence note.
+- [ ] PR title: `docs: update Results to v0.3.0 + iteration notes`.
+- [ ] STATUS above flipped to DONE, PR URL appended.
