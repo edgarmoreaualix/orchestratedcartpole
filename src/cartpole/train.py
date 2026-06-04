@@ -13,6 +13,8 @@ def main(
   seed: int = 1,
 ) -> None:
   """Train PPO on cartpole. See docs/INTERFACES.md."""
+  import datetime
+  import os
   from dataclasses import asdict
 
   import torch
@@ -26,8 +28,15 @@ def main(
   agent_cfg = get_ppo_config(experiment_name="cartpole")
   agent_cfg.max_iterations = max_iterations
   agent_cfg.seed = seed
+  agent_cfg.logger = "tensorboard"
+  agent_cfg.upload_model = False
+
+  timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+  log_dir = os.path.join("logs", agent_cfg.experiment_name, timestamp)
+  os.makedirs(log_dir, exist_ok=True)
+
   env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
-  runner = MjlabOnPolicyRunner(env, asdict(agent_cfg), device=device)
+  runner = MjlabOnPolicyRunner(env, asdict(agent_cfg), log_dir=log_dir, device=device)
   runner.learn(num_learning_iterations=max_iterations)
 
 
