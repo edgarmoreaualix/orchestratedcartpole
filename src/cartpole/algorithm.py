@@ -14,22 +14,22 @@ def get_ppo_config(experiment_name: str = "cartpole") -> RslRlOnPolicyRunnerCfg:
     actor=RslRlModelCfg(
       hidden_dims=(64, 64),
       activation="tanh",
-      obs_normalization=False,
+      obs_normalization=True,
       distribution_cfg={
         "class_name": "GaussianDistribution",
-        "init_std": 1.0,
+        "init_std": 0.5,
         "std_type": "scalar",
       },
     ),
     critic=RslRlModelCfg(
       hidden_dims=(64, 64),
       activation="tanh",
-      obs_normalization=False,
+      obs_normalization=True,
     ),
     algorithm=RslRlPpoAlgorithmCfg(
       clip_param=0.2,
       value_loss_coef=0.5,
-      entropy_coef=0.01,
+      entropy_coef=0.005,
       lam=0.95,
       gamma=0.99,
       learning_rate=3e-4,
