@@ -1,6 +1,11 @@
 import os
+import pathlib
+import sys
 
 import pytest
+
+# Allow `import scripts.view` from tests
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 
 def pytest_configure(config):
