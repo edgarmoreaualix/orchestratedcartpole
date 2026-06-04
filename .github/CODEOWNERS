@@ -1,0 +1,22 @@
+# Logical ownership map for the orchestrated build.
+# GitHub auto-review routing is not active because these are synthetic
+# identities; this file is documentation of who-owns-what.
+
+src/cartpole/env.py             @env-agent
+src/cartpole/algorithm.py       @algorithm-agent
+src/cartpole/train.py           @training-agent
+src/cartpole/eval.py            @evaluation-agent
+README.md                       @documentation-agent
+docs/                           @documentation-agent
+
+tasks/env-agent.md              @env-agent
+tasks/algorithm-agent.md        @algorithm-agent
+tasks/training-agent.md         @training-agent
+tasks/evaluation-agent.md       @evaluation-agent
+tasks/documentation-agent.md    @documentation-agent
+
+# Orchestrator owns the interface contracts and dispatch metadata.
+docs/INTERFACES.md              @orchestrator
+tasks/orchestrator.md           @orchestrator
+.github/                        @orchestrator
+pyproject.toml                  @orchestrator
