@@ -135,3 +135,42 @@ Commit `training-r3.log`. Do NOT commit the checkpoint.
 - [ ] `training-r3.log` committed.
 - [ ] PR title: `train: retrain with tuned config, release v0.3.0`. Body: final mean reward, full hyperparameters table, link to release.
 - [ ] STATUS above flipped to DONE, PR URL appended.
+
+### Task 4 — Retrain with mjlab's reference config, release v0.3.0 (2026-06-04, Round 4)
+
+**STATUS:** TODO
+
+**Branch:** `feat/training-agent-r4`.
+
+**Dependency:** Algorithm Agent's Round 4 PR (`algo: adopt mjlab's reference cartpole PPO config`) must be merged into `main` first. Verify with `git log origin/main --oneline | grep "algo: adopt"`. If absent, STOP and post `BLOCKED:` on your PR.
+
+**Context:** Round 3 Task 3 was abandoned because the Round 3 PPO config did not converge (mean reward 32/1000 at iteration 499; action std collapsed to 0.02). Round 4 retries with mjlab's upstream-tested reference config, which uses the KL-adaptive LR schedule we were missing. Convergence target unchanged: mean episode reward **≥ 700**.
+
+**Scope (one commit + one release):**
+
+After rebasing on the latest `main`:
+
+```bash
+uv run python -m cartpole.train --num-envs=128 --max-iterations=500 --device=cpu --seed=1 2>&1 | tee training-r4.log
+```
+
+Watch the stdout `Mean reward` line. With the adaptive-KL config, mean reward should climb rapidly past 100 within the first ~50 iterations and approach the ceiling. Target: **≥ 700 at iteration 500**.
+
+Once trained, ship the last checkpoint as release `v0.3.0`:
+
+```bash
+gh release create v0.3.0 logs/cartpole/<timestamp>/model_<N>.pt \
+  --title "Round 4 cartpole checkpoint — mjlab reference config" \
+  --notes "Trained with mjlab's reference PPO config (adaptive KL, lr=1e-3, ELU, 32-step rollouts), 500 iters, 128 envs, CPU. Final mean episode reward: <FROM_LOG>. This is the policy referenced by the README and the recorded GIF."
+```
+
+Commit `training-r4.log`. Do NOT commit the checkpoint.
+
+**Definition of done:**
+- [ ] Training run completed; mean episode reward ≥ 700 at last iteration.
+- [ ] GitHub release `v0.3.0` exists with the checkpoint attached.
+- [ ] `training-r4.log` committed.
+- [ ] PR title: `train: retrain with mjlab reference config, release v0.3.0`. Body: final mean reward, hyperparameters confirmation, link to release.
+- [ ] STATUS above flipped to DONE, PR URL appended.
+
+**If you encounter a true blocker** (training still fails to reach 700 even with reference config), push partial work and post `BLOCKED:` with the full log analysis.

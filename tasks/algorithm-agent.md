@@ -81,3 +81,75 @@ Same shape as `tasks/env-agent.md`: `git fetch origin && git rebase origin/main`
 - [ ] All six tests pass: `uv run pytest tests/test_algorithm.py -v` (3 existing + 3 new).
 - [ ] PR title: `algo: tune hyperparameters for cartpole convergence`. Body: a short table of the changes, a one-line rationale per change.
 - [ ] STATUS above flipped to DONE, PR URL appended.
+
+### Task 3 — Adopt mjlab's reference cartpole PPO config (2026-06-04, Round 4)
+
+**STATUS:** TODO
+
+**Branch:** `feat/algorithm-agent-r4`.
+
+**Context:** Round 3's hand-tuned config (Task 2) trained to mean reward **32 / 1000** — the policy collapsed (action std → 0.02) before finding a balancing solution. Investigation of mjlab's source (`mjlab.tasks.cartpole.cartpole_env_cfg.cartpole_ppo_runner_cfg`) revealed mjlab ships a **canonical PPO config tested on this exact env** that we were diverging from on multiple dimensions — most critically the KL-adaptive LR schedule, which our `schedule="fixed"` was missing. Round 4 aligns our config with the upstream reference.
+
+**Scope (one commit):** Replace the body of `get_ppo_config` in `src/cartpole/algorithm.py` with the values below, which match mjlab's `cartpole_ppo_runner_cfg()` verbatim except that `experiment_name` remains parameterized for our use case.
+
+```python
+def get_ppo_config(experiment_name: str = "cartpole") -> RslRlOnPolicyRunnerCfg:
+  """Return the PPO RslRlOnPolicyRunnerCfg. See docs/INTERFACES.md.
+
+  Hyperparameters match mjlab's upstream reference cartpole_ppo_runner_cfg()
+  (mjlab.tasks.cartpole.cartpole_env_cfg.cartpole_ppo_runner_cfg). Round 3's
+  hand-tuned config diverged from this reference and failed to converge;
+  Round 4 aligns with the upstream-tested values.
+  """
+  return RslRlOnPolicyRunnerCfg(
+    actor=RslRlModelCfg(
+      hidden_dims=(64, 64),
+      activation="elu",
+      obs_normalization=False,
+      distribution_cfg={
+        "class_name": "GaussianDistribution",
+        "init_std": 1.0,
+        "std_type": "scalar",
+      },
+    ),
+    critic=RslRlModelCfg(
+      hidden_dims=(64, 64),
+      activation="elu",
+      obs_normalization=False,
+    ),
+    algorithm=RslRlPpoAlgorithmCfg(
+      value_loss_coef=1.0,
+      use_clipped_value_loss=True,
+      clip_param=0.2,
+      entropy_coef=0.01,
+      num_learning_epochs=5,
+      num_mini_batches=4,
+      learning_rate=1.0e-3,
+      schedule="adaptive",
+      gamma=0.99,
+      lam=0.95,
+      desired_kl=0.01,
+      max_grad_norm=1.0,
+    ),
+    num_steps_per_env=32,
+    max_iterations=500,
+    save_interval=50,
+    experiment_name=experiment_name,
+  )
+```
+
+**Tests to update** in `tests/test_algorithm.py`:
+
+The three Round 3 tests (`test_get_ppo_config_obs_normalization_enabled`, `test_get_ppo_config_init_std_is_05`, `test_get_ppo_config_entropy_coef_is_005`) assert values that Round 4 reverts. Replace them with tests that assert the Round 4 values aligned with mjlab's reference:
+
+- `test_get_ppo_config_obs_normalization_disabled` — `cfg.actor.obs_normalization is False` and same for `critic`.
+- `test_get_ppo_config_uses_elu_activation` — `cfg.actor.activation == "elu"`.
+- `test_get_ppo_config_uses_adaptive_lr_schedule` — `cfg.algorithm.schedule == "adaptive"` and `cfg.algorithm.desired_kl == 0.01`.
+- `test_get_ppo_config_uses_value_loss_clipping` — `cfg.algorithm.use_clipped_value_loss is True` and `cfg.algorithm.max_grad_norm == 1.0`.
+- Keep the three pre-existing Round 1 tests untouched (signature, experiment_name, hyperparameter sanity).
+
+**Definition of done:**
+- [ ] `get_ppo_config` body matches the reference above.
+- [ ] All seven tests pass: `uv run pytest tests/test_algorithm.py -v` (3 Round 1 + 4 Round 4).
+- [ ] PR title: `algo: adopt mjlab's reference cartpole PPO config`. Body: link to `mjlab.tasks.cartpole.cartpole_env_cfg.cartpole_ppo_runner_cfg`, a brief note on why we diverged (Round 3 hand-tuning failed to converge), and the test output.
+- [ ] STATUS above flipped to DONE, PR URL appended.

@@ -40,6 +40,17 @@ Round 2's training was undertrained (mean reward 12/1000 — pole didn't balance
 
 Env Agent sits out Round 3 (no env changes needed). Dependencies are linear: Algo → Train → Eval → Docs.
 
+## Round 4 branches
+
+Round 3 training failed to converge (action std collapsed at 0.02, mean reward 32/1000). Investigation revealed mjlab ships its own tuned cartpole PPO config (`cartpole_ppo_runner_cfg()`) that uses a KL-adaptive LR schedule we were missing. Round 4 adopts mjlab's reference config and retrains.
+
+| Agent             | Round 4 branch                |
+|-------------------|--------------------------------|
+| Algorithm Agent   | `feat/algorithm-agent-r4`      |
+| Training Agent    | `feat/training-agent-r4`       |
+
+Eval and Docs continue using their Round 3 branches when Training v0.3.0 ships; their tasks are unchanged.
+
 ## Cross-agent rules
 
 - An agent only edits its own files (the path it owns and its own task file).
