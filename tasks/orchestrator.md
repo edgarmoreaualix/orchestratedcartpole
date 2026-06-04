@@ -21,6 +21,16 @@ Each worktree shares the same underlying `.git` database but holds its own check
 - Every agent commits under its own author identity (configured locally per shell, see each agent file).
 - Every agent's PR title uses a conventional-commits prefix: `env:`, `algo:`, `train:`, `eval:`, `docs:`.
 
+## Autonomy norm (applies to every agent on every task)
+
+Agents run end-to-end without asking the operator for confirmation. Specifically:
+
+1. **Decide reasonable defaults silently.** When the spec leaves a choice open (file structure inside your owned path, naming of helper variables, choice between two equally-valid library calls), pick one and move on. Document the choice in the PR body, not in a question to the operator.
+2. **Do not ask permission to commit, push, or open the PR.** The task file already authorises all three; just do them.
+3. **Auto-rebase after any upstream merge.** If `git pull --rebase origin main` shows new commits that conflict with your branch (most commonly `uv.lock` or `pyproject.toml`), resolve in favour of `main` for shared infra files and re-apply your code changes. Force-push your branch (`git push --force-with-lease`) and post a one-line comment on your PR: `rebased onto <short-sha>`.
+4. **Stop only on true blockers.** Real blockers are: a failing test you cannot fix without changing another agent's owned file; an interface change you cannot make unilaterally; a missing system dependency you cannot install. Anything else, decide and proceed.
+5. **When you stop, report.** Push whatever partial work exists, post a single comment on the PR starting with `BLOCKED:` followed by exactly what is needed to unblock. Do not loop.
+
 ## Dispatch protocol (orchestrator side)
 
 1. Append a new `### Task N — <title> (YYYY-MM-DD)` block at the bottom of `tasks/<agent>.md`, status `TODO`.
