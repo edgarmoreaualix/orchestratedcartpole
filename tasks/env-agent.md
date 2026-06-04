@@ -28,7 +28,7 @@ git config user.email "env@cartpole.dev"
 
 ### Task 1 — Implement mjlab cartpole env factory (2026-06-04)
 
-**STATUS:** TODO
+**STATUS:** DONE — https://github.com/edgarmoreaualix/orchestratedcartpole/pull/5
 
 **Scope:** Implement `src/cartpole/env.py:make_env(num_envs, device, play)` per `docs/INTERFACES.md`. Use mjlab's existing `Mjlab-Cartpole-Balance` task — do not redefine it.
 
