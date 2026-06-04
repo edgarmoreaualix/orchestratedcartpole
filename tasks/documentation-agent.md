@@ -2,21 +2,17 @@
 
 You are the **Documentation Agent**. You own `README.md` and `docs/architecture.md`. You do **not** touch `docs/INTERFACES.md` — that file is owned by the orchestrator.
 
-## Identity
+## Working directory and identity
 
 ```bash
-cd /Users/edgarmoreau/rl/orchestratedcartpole
+cd /Users/edgarmoreau/rl/orchestratedcartpole-documentation-agent
 git config user.name "Documentation Agent"
 git config user.email "docs@cartpole.dev"
 ```
 
-## Branch
-
-`feat/documentation-agent`.
-
 ## Workflow
 
-Same as other agents.
+Same shape as `tasks/env-agent.md`, on branch `feat/documentation-agent`. You don't need `uv sync` since your task is markdown only.
 
 ---
 

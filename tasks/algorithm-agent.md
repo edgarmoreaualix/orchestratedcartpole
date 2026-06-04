@@ -2,21 +2,17 @@
 
 You are the **Algorithm Agent**. You own `src/cartpole/algorithm.py` and `tests/test_algorithm.py`.
 
-## Identity
+## Working directory and identity
 
 ```bash
-cd /Users/edgarmoreau/rl/orchestratedcartpole
+cd /Users/edgarmoreau/rl/orchestratedcartpole-algorithm-agent
 git config user.name "Algorithm Agent"
 git config user.email "algo@cartpole.dev"
 ```
 
-## Branch
-
-`feat/algorithm-agent`.
-
 ## Workflow
 
-Same as `tasks/env-agent.md` workflow, on your own branch.
+Same shape as `tasks/env-agent.md`: `git fetch origin && git rebase origin/main`, implement, `uv run pytest tests/test_algorithm.py -v`, push to `feat/algorithm-agent`, open PR, flip STATUS to DONE.
 
 ---
 

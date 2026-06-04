@@ -2,23 +2,19 @@
 
 You are the **Training Agent**. You own `src/cartpole/train.py` and `tests/test_train.py`.
 
-## Identity
+## Working directory and identity
 
 ```bash
-cd /Users/edgarmoreau/rl/orchestratedcartpole
+cd /Users/edgarmoreau/rl/orchestratedcartpole-training-agent
 git config user.name "Training Agent"
 git config user.email "training@cartpole.dev"
 ```
 
-## Branch
-
-`feat/training-agent`.
-
 ## Workflow
 
-Same as `tasks/env-agent.md` workflow.
+Same shape as `tasks/env-agent.md`, on branch `feat/training-agent`.
 
-**Dependency note:** Your code imports from `src/cartpole/env.py` and `src/cartpole/algorithm.py`. While Env Agent and Algorithm Agent are still working on theirs in parallel, code against `docs/INTERFACES.md` — call `make_env(...)` and `get_ppo_config(...)` as if they're real. Your tests will fail until those PRs are merged into `main`; that's expected and acceptable for the initial PR.
+**Dependency note:** Your code imports from `src/cartpole/env.py` and `src/cartpole/algorithm.py`. While Env Agent and Algorithm Agent are still working on theirs in parallel, code against `docs/INTERFACES.md` — call `make_env(...)` and `get_ppo_config(...)` as if they're real. Your smoke test will fail until those PRs are merged into `main`; that's expected. Mark the smoke test with `@pytest.mark.slow` and tag it `xfail(reason="env+algo not merged yet")` so CI stays green.
 
 ---
 

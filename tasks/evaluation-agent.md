@@ -2,21 +2,17 @@
 
 You are the **Evaluation Agent**. You own `src/cartpole/eval.py` and `tests/test_eval.py`.
 
-## Identity
+## Working directory and identity
 
 ```bash
-cd /Users/edgarmoreau/rl/orchestratedcartpole
+cd /Users/edgarmoreau/rl/orchestratedcartpole-evaluation-agent
 git config user.name "Evaluation Agent"
 git config user.email "eval@cartpole.dev"
 ```
 
-## Branch
-
-`feat/evaluation-agent`.
-
 ## Workflow
 
-Same as other agents.
+Same shape as `tasks/env-agent.md`, on branch `feat/evaluation-agent`.
 
 **Dependency note:** Your code imports `make_env` from `env.py` and reuses the PPO inference loader. You need a checkpoint to actually test end-to-end, so the integration test is gated on `pytest.mark.requires_checkpoint` and skipped if none is present. The unit-level tests run anyway.
 
