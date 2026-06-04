@@ -84,7 +84,7 @@ Same shape as `tasks/env-agent.md`: `git fetch origin && git rebase origin/main`
 
 ### Task 3 — Adopt mjlab's reference cartpole PPO config (2026-06-04, Round 4)
 
-**STATUS:** TODO
+**STATUS:** DONE — https://github.com/edgarmoreaualix/orchestratedcartpole/pull/10
 
 **Branch:** `feat/algorithm-agent-r4`.
 
