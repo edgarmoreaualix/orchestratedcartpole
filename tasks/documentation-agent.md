@@ -24,7 +24,7 @@ Same as other agents.
 
 ### Task 1 — Write the system README and architecture doc (2026-06-04)
 
-**STATUS:** TODO
+**STATUS:** DONE — https://github.com/edgarmoreaualix/orchestratedcartpole/pull/1
 
 **Scope:** Replace the placeholder `README.md` and `docs/architecture.md` with real documentation describing **the system, not the orchestration process**. The README is the project's front page: someone landing on it should learn what the project does, how to install it, how to train, how to evaluate, and how the codebase is structured.
 
