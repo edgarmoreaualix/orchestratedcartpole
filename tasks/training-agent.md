@@ -22,7 +22,7 @@ Same shape as `tasks/env-agent.md`, on branch `feat/training-agent`.
 
 ### Task 1 — Implement training entrypoint (2026-06-04)
 
-**STATUS:** TODO
+**STATUS:** DONE — PR https://github.com/edgarmoreaualix/orchestratedcartpole/pull/4
 
 **Scope:** Implement `src/cartpole/train.py:main(num_envs, max_iterations, device, seed)` per `docs/INTERFACES.md`. Wires env + algo into rsl_rl's `OnPolicyRunner` and runs `max_iterations` of PPO.
 
