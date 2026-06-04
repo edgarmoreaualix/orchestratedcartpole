@@ -138,7 +138,7 @@ Commit `training-r3.log`. Do NOT commit the checkpoint.
 
 ### Task 4 — Retrain with mjlab's reference config, release v0.3.0 (2026-06-04, Round 4)
 
-**STATUS:** TODO
+**STATUS:** BLOCKED — PR https://github.com/edgarmoreaualix/orchestratedcartpole/pull/11 | Final mean reward 49.65/500 iters; action std collapsed to 0.00; env has no fall-termination so policy learned passive hang equilibrium. Fix: add hinge-angle termination in env.py.
 
 **Branch:** `feat/training-agent-r4`.
 
