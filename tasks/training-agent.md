@@ -66,7 +66,7 @@ Add a `tyro.cli` entry under `if __name__ == "__main__":` (already in the stub).
 
 ### Task 2 — Train a real cartpole policy + ship release (2026-06-04, Round 2)
 
-**STATUS:** TODO
+**STATUS:** DONE — PR https://github.com/edgarmoreaualix/orchestratedcartpole/pull/7 | Release https://github.com/edgarmoreaualix/orchestratedcartpole/releases/tag/v0.2.0
 
 **Branch:** `feat/training-agent-r2` (already checked out in your worktree).
 
